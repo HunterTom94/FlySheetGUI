@@ -21,7 +21,8 @@ class App(QDialog):
         self.width = 800
         self.height = 800
         self.folder = folder
-        self.label_list = ["Age", "Genotype", "Sex", 'Setup Time', 'Number', 'Condition', 'Condition Time', 'Alert Days','Condition Start',
+        self.label_list = ["Age", "Genotype", "Sex", 'Setup Time', 'Number', 'Condition', 'Condition Time',
+                           'Alert Days', 'Condition Start',
                            'Hatch Time', 'Position']
         self.read_df()
         self.current_vial = []
@@ -70,11 +71,15 @@ class App(QDialog):
             button = QPushButton('{} - {}'.format(row_ind + 1, col_ind + 1))
             button.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
             if self.fly_sheet['Position'].isin(['{} - {}'.format(row_ind + 1, col_ind + 1)]).any():
-                setuptime_str = str(self.fly_sheet.loc[self.fly_sheet['Position'] == '{} - {}'.format(row_ind + 1, col_ind + 1), 'Setup Time'].values[0])
+                setuptime_str = str(self.fly_sheet.loc[self.fly_sheet['Position'] == '{} - {}'.format(row_ind + 1,
+                                                                                                      col_ind + 1), 'Setup Time'].values[
+                                        0])
                 setuptime_obj = datetime.strptime(setuptime_str, "%m/%d/%Y, %H:%M")
                 lastflip_obj = datetime.now() - setuptime_obj
                 lastflip_day = lastflip_obj.days
-                if lastflip_day >= int(self.fly_sheet.loc[self.fly_sheet['Position'] == '{} - {}'.format(row_ind + 1, col_ind + 1), 'Alert Days'].values[0]):
+                if lastflip_day >= int(self.fly_sheet.loc[self.fly_sheet['Position'] == '{} - {}'.format(row_ind + 1,
+                                                                                                         col_ind + 1), 'Alert Days'].values[
+                                           0]):
                     button.setStyleSheet("background-color:rgb(255,0,0)")
                 else:
                     button.setStyleSheet("background-color:rgb(0,255,0)")
@@ -102,9 +107,10 @@ class App(QDialog):
                     hatchtime_obj = datetime.strptime(hatchtime_str, "%m/%d/%Y, %H:%M")
                     age_obj = datetime.now() - hatchtime_obj
                     age_day = str(age_obj.days)
-                    age_hour = str(int(age_obj.seconds/3600))
+                    age_hour = str(int(age_obj.seconds / 3600))
                     item_value = age_day + 'days ' + age_hour + 'hours'
-                elif col == 'Condition Time' and (not pd.isna(vial_info.iloc[0, self.label_list.index('Condition Start')])):
+                elif col == 'Condition Time' and (
+                not pd.isna(vial_info.iloc[0, self.label_list.index('Condition Start')])):
                     hatchtime_str = vial_info.iloc[0, self.label_list.index('Condition Start')]
                     hatchtime_obj = datetime.strptime(hatchtime_str, "%m/%d/%Y, %H:%M")
                     age_obj = datetime.now() - hatchtime_obj
@@ -148,7 +154,8 @@ class App(QDialog):
                     self.fly_sheet.at[self.fly_sheet['Position'] == self.current_vial, 'Hatch Time'] = setuptime_str
             else:
                 self.fly_sheet = self.fly_sheet.append(
-                    {'Position': self.current_vial, 'Setup Time': setuptime_str, 'Hatch Time': setuptime_str, 'Alert Days': '2'},
+                    {'Position': self.current_vial, 'Setup Time': setuptime_str, 'Hatch Time': setuptime_str,
+                     'Alert Days': '2'},
                     ignore_index=True)
 
 
@@ -181,16 +188,15 @@ class App(QDialog):
         self.windowLayout.addWidget(self.tableGroupBox)
         self.windowLayout.addWidget(self.inputGroupBox)
 
-
     def show_info(self):
 
         sending_button = self.sender()
         self.current_vial = sending_button.text()
         if self.transfer_to != []:
-            temp_dict = self.fly_sheet.loc[self.fly_sheet['Position'] == self.current_vial,:].to_dict('r')[0]
+            temp_dict = self.fly_sheet.loc[self.fly_sheet['Position'] == self.current_vial, :].to_dict('r')[0]
             temp_dict['Position'] = self.transfer_to
-            self.fly_sheet = self.fly_sheet.append(temp_dict,ignore_index=True)
-            self.transfer_to=[]
+            self.fly_sheet = self.fly_sheet.append(temp_dict, ignore_index=True)
+            self.transfer_to = []
 
         self.refresh()
 
@@ -209,18 +215,17 @@ class App(QDialog):
         # from_vial_split = from_vial.split(' ')
         # assert from_vial_split[0].isdigit() and from_vial_split[2].isdigit() and from_vial_split[1] == '-', 'From Vial Wrong Format'
 
-
     def flip(self):
-        self.tableWidget.setItem(0,self.label_list.index('Setup Time'),QTableWidgetItem(QTableWidgetItem("")))
+        self.tableWidget.setItem(0, self.label_list.index('Setup Time'), QTableWidgetItem(QTableWidgetItem("")))
 
     def condition_start(self):
         self.flip()
-        self.fly_sheet.at[self.fly_sheet['Position'] == self.current_vial, 'Condition Start'] = self.fly_sheet.loc[self.fly_sheet['Position'] == self.current_vial, 'Setup Time']
+        self.fly_sheet.at[self.fly_sheet['Position'] == self.current_vial, 'Condition Start'] = self.fly_sheet.loc[
+            self.fly_sheet['Position'] == self.current_vial, 'Setup Time']
 
     def hatch(self):
         self.flip()
         self.fly_sheet.at[self.fly_sheet['Position'] == self.current_vial, 'Alert Days'] = '5'
-
 
 
 if __name__ == '__main__':
